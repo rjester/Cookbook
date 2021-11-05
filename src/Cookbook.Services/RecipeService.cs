@@ -7,6 +7,7 @@ namespace Cookbook.Services
     public interface IRecipeService 
     {
         IEnumerable<RecipeDto> GetAll();
+        RecipeDto GetById(int id);
     }
 
     public class RecipeService : IRecipeService
@@ -42,15 +43,35 @@ namespace Cookbook.Services
                             .ToList();
 
             return result;
-
         }
 
-        /*
-         _context.Recipes
-                .Include(x => x.Ingredients)
-                .ThenInclude(x => x.Ingredient)
-                            .Include(x => x.Steps)
-                            .ToList();
-         */
+        public RecipeDto GetById(int id)
+        {
+            var result = _context.Recipes
+                        .Include(x => x.Ingredients)
+                            .ThenInclude(x => x.Ingredient)
+                        .Include(x => x.Steps)
+                    .Where(x => x.Id == id)
+                    .Select(x => new RecipeDto
+                    {
+                        Id = x.Id,
+                        Description = x.Description,
+                        Title = x.Title,
+                        Steps = x.Steps.Select(s => new StepDto
+                        {
+                            Id = s.Id,
+                            Description = s.Description
+                        }).ToArray(),
+                        Ingredients = x.Ingredients.Select(i => new IngredientDto
+                        {
+                            Id = i.Id,
+                            Name = i.Ingredient.Name,
+                            Quantity = (float)i.Quantity,
+                            Unit = i.Unit
+                        }).ToArray()
+                    }).FirstOrDefault();
+
+            return result;
+        }
     }
 }

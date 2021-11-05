@@ -25,15 +25,20 @@ namespace Cookbook.UI.Controllers
         }
 
         [HttpGet(Name = "GetAllRecipes")]
-        public IEnumerable<RecipeDto> GetAll()
+        public IActionResult GetAll()
         {
-            return _svc.GetAll();
+            return Ok(_svc.GetAll());
         }
 
         [HttpGet("{id}", Name = "GetRecipe")]
-        public Recipe GetById(int id)
+        public IActionResult GetById(int id)
         {
-            return new Recipe();
+            var result = _svc.GetById(id);
+            if (result is null)
+            {
+                return NotFound();
+            }
+            return Ok(result);
         }
     }
 }
