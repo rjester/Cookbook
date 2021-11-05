@@ -1,4 +1,6 @@
 using Cookbook.Data.Entities;
+using Cookbook.Services;
+using Cookbook.Services.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,23 +15,19 @@ namespace Cookbook.UI.Controllers
     public class RecipeController : ControllerBase
     {
         private readonly ILogger<RecipeController> _logger;
-        private readonly CookbookContext _context;
+        private readonly IRecipeService _svc;
 
         public RecipeController(ILogger<RecipeController> logger, 
-                                CookbookContext context)
+                                IRecipeService svc)
         {
             _logger = logger;
-            _context = context;
+            _svc = svc;
         }
 
         [HttpGet(Name = "GetAllRecipes")]
-        public IEnumerable<Recipe> GetAll()
+        public IEnumerable<RecipeDto> GetAll()
         {
-            return _context.Recipes
-                .Include(x => x.Ingredients)
-                .ThenInclude(x => x.Ingredient)
-                            .Include(x => x.Steps)
-                            .ToList();
+            return _svc.GetAll();
         }
 
         [HttpGet("{id}", Name = "GetRecipe")]

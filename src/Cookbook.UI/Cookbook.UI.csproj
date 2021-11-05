@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Cookbook.Data\Cookbook.Data.csproj" />
+    <ProjectReference Include="..\Cookbook.Services\Cookbook.Services.csproj" />
   </ItemGroup>
 
 </Project>
