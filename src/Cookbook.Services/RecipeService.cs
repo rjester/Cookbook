@@ -8,6 +8,7 @@ namespace Cookbook.Services
     {
         IEnumerable<RecipeDto> GetAll();
         RecipeDto GetById(int id);
+        RecipeDto Add(RecipeDto newRecipe);
     }
 
     public class RecipeService : IRecipeService
@@ -72,6 +73,52 @@ namespace Cookbook.Services
                     }).FirstOrDefault();
 
             return result;
+        }
+
+        public RecipeDto Add(RecipeDto newRecipe)
+        {
+            var ingredients = new List<RecipeIngredient>();
+            // find existing ingredients
+            foreach (var ing in newRecipe.Ingredients)
+            {
+                var x = _context.RecipeIngredients.Include(x => x.Ingredient).FirstOrDefault(x => x.Ingredient.Name == ing.Name);
+                if (x != null)
+                {
+                    ingredients.Add(new RecipeIngredient 
+                                    { 
+                                        Ingredient = x.Ingredient,
+                                        Quantity = (decimal)ing.Quantity,
+                                        Unit = ing.Unit
+                                    });
+                }
+                else
+                {
+                    ingredients.Add(new RecipeIngredient
+                    {
+                        Ingredient = new Ingredient
+                        {
+                            Name = ing.Name
+                        },
+                        Quantity = (decimal)ing.Quantity,
+                        Unit = ing.Unit
+                    });
+                }
+            }
+            
+            var entity = new Recipe 
+            { 
+                Description = newRecipe.Description,
+                Title = newRecipe.Title,
+                Ingredients = ingredients,
+                Steps = newRecipe.Steps.Select(x => new Step
+                {
+                    Description = x.Description
+                }).ToList()
+            };
+
+            _context.Recipes.Add(entity);
+            _context.SaveChanges();
+            return GetById(entity.Id);
         }
     }
 }

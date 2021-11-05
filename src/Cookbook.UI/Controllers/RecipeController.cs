@@ -40,5 +40,12 @@ namespace Cookbook.UI.Controllers
             }
             return Ok(result);
         }
+
+        [HttpPost(Name = "AddRecipe")]
+        public IActionResult Add(RecipeDto recipe)
+        {
+            var result = _svc.Add(recipe);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
     }
 }
