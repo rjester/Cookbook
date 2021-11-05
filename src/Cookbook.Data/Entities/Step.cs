@@ -7,6 +7,5 @@ namespace Cookbook.Data.Entities
         [Required]
         [MaxLength(500)]
         public string Description { get; set; }
-        public Recipe Recipe { get; set; }
     }
 }

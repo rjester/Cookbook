@@ -4,6 +4,7 @@ using Cookbook.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cookbook.Data.Migrations
 {
     [DbContext(typeof(CookbookContext))]
-    partial class CookbookContextModelSnapshot : ModelSnapshot
+    [Migration("20211105142441_remove recipe reference in step")]
+    partial class removerecipereferenceinstep
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,7 +37,12 @@ namespace Cookbook.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int?>("RecipeId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("RecipeId");
 
                     b.ToTable("Ingredients");
                 });
@@ -117,6 +124,13 @@ namespace Cookbook.Data.Migrations
                     b.ToTable("Steps");
                 });
 
+            modelBuilder.Entity("Cookbook.Data.Entities.Ingredient", b =>
+                {
+                    b.HasOne("Cookbook.Data.Entities.Recipe", null)
+                        .WithMany("Ingredients")
+                        .HasForeignKey("RecipeId");
+                });
+
             modelBuilder.Entity("Cookbook.Data.Entities.RecipeIngredient", b =>
                 {
                     b.HasOne("Cookbook.Data.Entities.Ingredient", "Ingredient")
@@ -126,7 +140,7 @@ namespace Cookbook.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Cookbook.Data.Entities.Recipe", "Recipe")
-                        .WithMany("Ingredients")
+                        .WithMany()
                         .HasForeignKey("RecipeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
