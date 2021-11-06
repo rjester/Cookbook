@@ -4,11 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cookbook.Services
 {
-    public interface IRecipeService 
+    public interface IRecipeService
     {
         IEnumerable<RecipeDto> GetAll();
         RecipeDto GetById(int id);
         RecipeDto Add(RecipeDto newRecipe);
+        RecipeDto Update(int id, RecipeDto recipe);
     }
 
     public class RecipeService : IRecipeService
@@ -19,20 +20,22 @@ namespace Cookbook.Services
             _context = context;
         }
 
-        public IEnumerable<RecipeDto> GetAll() 
-        { 
+        public IEnumerable<RecipeDto> GetAll()
+        {
             var result = _context.Recipes
                 .Include(x => x.Ingredients)
                 .ThenInclude(x => x.Ingredient)
                             .Include(x => x.Steps)
-                            .Select(x => new RecipeDto { 
+                            .Select(x => new RecipeDto
+                            {
                                 Id = x.Id,
                                 Description = x.Description,
                                 Title = x.Title,
-                                Steps = x.Steps.Select(s => new StepDto { 
-                                                    Id = s.Id,
-                                                    Description = s.Description
-                                        }).ToArray(),
+                                Steps = x.Steps.Select(s => new StepDto
+                                {
+                                    Id = s.Id,
+                                    Description = s.Description
+                                }).ToArray(),
                                 Ingredients = x.Ingredients.Select(i => new IngredientDto
                                 {
                                     Id = i.Id,
@@ -84,12 +87,12 @@ namespace Cookbook.Services
                 var x = _context.RecipeIngredients.Include(x => x.Ingredient).FirstOrDefault(x => x.Ingredient.Name == ing.Name);
                 if (x != null)
                 {
-                    ingredients.Add(new RecipeIngredient 
-                                    { 
-                                        Ingredient = x.Ingredient,
-                                        Quantity = (decimal)ing.Quantity,
-                                        Unit = ing.Unit
-                                    });
+                    ingredients.Add(new RecipeIngredient
+                    {
+                        Ingredient = x.Ingredient,
+                        Quantity = (decimal)ing.Quantity,
+                        Unit = ing.Unit
+                    });
                 }
                 else
                 {
@@ -104,9 +107,9 @@ namespace Cookbook.Services
                     });
                 }
             }
-            
-            var entity = new Recipe 
-            { 
+
+            var entity = new Recipe
+            {
                 Description = newRecipe.Description,
                 Title = newRecipe.Title,
                 Ingredients = ingredients,
@@ -119,6 +122,52 @@ namespace Cookbook.Services
             _context.Recipes.Add(entity);
             _context.SaveChanges();
             return GetById(entity.Id);
+        }
+
+        public RecipeDto Update(int id, RecipeDto recipe)
+        {
+            var ingredients = new List<RecipeIngredient>();
+            // find existing ingredients
+            foreach (var ing in recipe.Ingredients)
+            {
+                var x = _context.RecipeIngredients.Include(x => x.Ingredient).FirstOrDefault(x => x.Ingredient.Name == ing.Name);
+                if (x != null)
+                {
+                    ingredients.Add(new RecipeIngredient
+                    {
+                        Ingredient = x.Ingredient,
+                        Quantity = (decimal)ing.Quantity,
+                        Unit = ing.Unit
+                    });
+                }
+                else
+                {
+                    ingredients.Add(new RecipeIngredient
+                    {
+                        Ingredient = new Ingredient
+                        {
+                            Name = ing.Name
+                        },
+                        Quantity = (decimal)ing.Quantity,
+                        Unit = ing.Unit
+                    });
+                }
+            }
+
+            var entity = new Recipe
+            {
+                Id = recipe.Id,
+                Description = recipe.Description,
+                Title = recipe.Title,
+                Ingredients = ingredients,
+                Steps = recipe.Steps.Select(x => new Step
+                {
+                    Description = x.Description
+                }).ToList()
+            };
+            _context.Update(entity);
+            _context.SaveChanges();
+            return GetById(id);
         }
     }
 }

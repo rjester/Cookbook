@@ -17,7 +17,7 @@ namespace Cookbook.UI.Controllers
         private readonly ILogger<RecipeController> _logger;
         private readonly IRecipeService _svc;
 
-        public RecipeController(ILogger<RecipeController> logger, 
+        public RecipeController(ILogger<RecipeController> logger,
                                 IRecipeService svc)
         {
             _logger = logger;
@@ -45,6 +45,20 @@ namespace Cookbook.UI.Controllers
         public IActionResult Add(RecipeDto recipe)
         {
             var result = _svc.Add(recipe);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+
+        [Route("update")]
+        [HttpPost()]
+        public IActionResult Update(int id, RecipeDto recipe)
+        {
+            if (id != recipe.Id)
+            {
+                return NotFound();
+            }
+            var result = _svc.Update(id, recipe);
+
+            //var result = _svc.Add(recipe);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
     }
