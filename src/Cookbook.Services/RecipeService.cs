@@ -1,6 +1,7 @@
 ﻿using Cookbook.Data.Entities;
 using Cookbook.Services.Dtos;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace Cookbook.Services
 {
@@ -80,44 +81,42 @@ namespace Cookbook.Services
 
         public RecipeDto Add(RecipeDto newRecipe)
         {
-            var ingredients = new List<RecipeIngredient>();
-            // find existing ingredients
-            foreach (var ing in newRecipe.Ingredients)
-            {
-                var x = _context.RecipeIngredients.Include(x => x.Ingredient).FirstOrDefault(x => x.Ingredient.Name == ing.Name);
-                if (x != null)
-                {
-                    ingredients.Add(new RecipeIngredient
-                    {
-                        Ingredient = x.Ingredient,
-                        Quantity = (decimal)ing.Quantity,
-                        Unit = ing.Unit
-                    });
-                }
-                else
-                {
-                    ingredients.Add(new RecipeIngredient
-                    {
-                        Ingredient = new Ingredient
-                        {
-                            Name = ing.Name
-                        },
-                        Quantity = (decimal)ing.Quantity,
-                        Unit = ing.Unit
-                    });
-                }
-            }
-
             var entity = new Recipe
             {
                 Description = newRecipe.Description,
-                Title = newRecipe.Title,
-                Ingredients = ingredients,
-                Steps = newRecipe.Steps.Select(x => new Step
-                {
-                    Description = x.Description
-                }).ToList()
+                Title = newRecipe.Title
             };
+
+            //foreach (var ing in newRecipe.Ingredients)
+            //{
+            //    var x = _context.RecipeIngredients.Include(x => x.Ingredient).FirstOrDefault(x => x.Ingredient.Name == ing.Name);
+            //    if (x != null)
+            //    {
+            //        entity.Ingredients.Add(new RecipeIngredient
+            //        {
+            //            Ingredient = x.Ingredient,
+            //            Quantity = (decimal)ing.Quantity,
+            //            Unit = ing.Unit
+            //        });
+            //    }
+            //    else
+            //    {
+            //        entity.Ingredients.Add(new RecipeIngredient
+            //        {
+            //            Ingredient = new Ingredient
+            //            {
+            //                Name = ing.Name
+            //            },
+            //            Quantity = (decimal)ing.Quantity,
+            //            Unit = ing.Unit
+            //        });
+            //    }
+            //}
+
+            //entity.Steps = newRecipe.Steps.Select(x => new Step
+            //{
+            //    Description = x.Description
+            //}).ToList();
 
             _context.Recipes.Add(entity);
             _context.SaveChanges();
@@ -126,46 +125,94 @@ namespace Cookbook.Services
 
         public RecipeDto Update(int id, RecipeDto recipe)
         {
-            var ingredients = new List<RecipeIngredient>();
-            // find existing ingredients
-            foreach (var ing in recipe.Ingredients)
-            {
-                var x = _context.RecipeIngredients.Include(x => x.Ingredient).FirstOrDefault(x => x.Ingredient.Name == ing.Name);
-                if (x != null)
-                {
-                    ingredients.Add(new RecipeIngredient
-                    {
-                        Ingredient = x.Ingredient,
-                        Quantity = (decimal)ing.Quantity,
-                        Unit = ing.Unit
-                    });
-                }
-                else
-                {
-                    ingredients.Add(new RecipeIngredient
-                    {
-                        Ingredient = new Ingredient
-                        {
-                            Name = ing.Name
-                        },
-                        Quantity = (decimal)ing.Quantity,
-                        Unit = ing.Unit
-                    });
-                }
-            }
+            var fromDb = _context.Recipes
+                                .Include(x => x.Ingredients)
+                                    .ThenInclude(x => x.Ingredient)
+                                .Include(x => x.Steps)
+                                .SingleOrDefault(y => y.Id == id);
 
-            var entity = new Recipe
+            if (fromDb != null)
             {
-                Id = recipe.Id,
-                Description = recipe.Description,
-                Title = recipe.Title,
-                Ingredients = ingredients,
-                Steps = recipe.Steps.Select(x => new Step
+                fromDb.Description = recipe.Description;
+                fromDb.Title = recipe.Title;
+
+                foreach (var existingIngredient in fromDb.Ingredients)
                 {
-                    Description = x.Description
-                }).ToList()
-            };
-            _context.Update(entity);
+                    if (!recipe.Ingredients.Any(i => i.Id == existingIngredient.Id))
+                    {
+                        fromDb.Ingredients.Remove(existingIngredient);
+                    }
+                }
+
+                foreach (var childModel in recipe.Ingredients)
+                {
+                    var existingChild = fromDb.Ingredients
+                               .Where(c => c.Id == childModel.Id && c.Id != default(int))
+                               .SingleOrDefault();
+
+                    if (existingChild != null)
+                        // Update child
+                        _context.Entry(existingChild).CurrentValues.SetValues(childModel);
+                    else
+                    {
+                        // Insert child
+                        var newChild = new RecipeIngredient
+                        {
+                            Quantity = (decimal)childModel.Quantity,
+                            Unit = childModel.Unit,
+                            Ingredient = new Ingredient
+                            {
+                                Id = childModel.Id,
+                                Name = childModel.Name
+                            }
+                        };
+                        fromDb.Ingredients.Add(newChild);
+                    }
+                }
+
+
+                //var ingredients = new List<RecipeIngredient>();
+                //// find existing ingredients
+                //foreach (var ing in recipe.Ingredients)
+                //{
+                //    var x = _context.RecipeIngredients.Include(x => x.Ingredient).FirstOrDefault(x => x.Ingredient.Name == ing.Name);
+                //    if (x != null)
+                //    {
+                //        ingredients.Add(new RecipeIngredient
+                //        {
+                //            Ingredient = x.Ingredient,
+                //            Quantity = (decimal)ing.Quantity,
+                //            Unit = ing.Unit
+                //        });
+                //    }
+                //    else
+                //    {
+                //        ingredients.Add(new RecipeIngredient
+                //        {
+                //            Ingredient = new Ingredient
+                //            {
+                //                Name = ing.Name
+                //            },
+                //            Quantity = (decimal)ing.Quantity,
+                //            Unit = ing.Unit
+                //        });
+                //    }
+                //}
+
+                //var entity = new Recipe
+                //{
+                //    Id = recipe.Id,
+                //    Description = recipe.Description,
+                //    Title = recipe.Title,
+                //    Ingredients = ingredients,
+                //    Steps = recipe.Steps.Select(x => new Step
+                //    {
+                //        Description = x.Description
+                //    }).ToList()
+                //};
+                //_context.Update(entity);
+
+            }
             _context.SaveChanges();
             return GetById(id);
         }
