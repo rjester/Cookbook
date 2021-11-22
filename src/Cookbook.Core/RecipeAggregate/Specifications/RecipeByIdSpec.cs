@@ -8,7 +8,9 @@ namespace Cookbook.Core.RecipeAggregate.Specifications;
     {
         Query
             .Where(recipe => recipe.Id == recipeId)
-            .Include(recipe => recipe.Steps);
+            .Include(recipe => recipe.Steps)
+            .Include(recipe => recipe.RecipeIngredients)
+            .ThenInclude(r => r.Ingredient);
     }
 }
 

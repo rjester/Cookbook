@@ -1,45 +1,44 @@
-﻿using Ardalis.GuardClauses;
-using Cookbook.Core.Events;
-using Cookbook.SharedKernel;
+﻿using Cookbook.SharedKernel;
 using Cookbook.SharedKernel.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Cookbook.Core.RecipeAggregate
 {
-    public class Recipe : BaseEntity, IAggregateRoot
+    public partial class Recipe : BaseEntity, IAggregateRoot
     {
-        public string Title { get; private set; }
-        public string Description { get; private set; }
-        private List<Step> _steps = new List<Step>();
-        public IEnumerable<Step> Steps => _steps.AsReadOnly();
-        
-        public Recipe(string title, string description)
+        public int Id { get; set; }
+        public string Title { get; set; } = null!;
+        public string Description { get; set; } = null!;
+
+        public virtual ICollection<RecipeIngredient> RecipeIngredients { get; set; }
+        public virtual ICollection<Step> Steps { get; set; }
+
+        public Recipe()
         {
-            Title = Guard.Against.NullOrEmpty(title, nameof(title));
-            Description = Guard.Against.NullOrEmpty(description, nameof(description));
+            //RecipeIngredients = new HashSet<RecipeIngredient>();
+            //Steps = new HashSet<Step>();
         }
 
-        public void AddStep(Step newStep)
+        public Recipe(string title, string description) : this()
         {
-            Guard.Against.Null(newStep, nameof(newStep));
-            _steps.Add(newStep);
-
-            var newStepAddedEvent = new NewStepAddedEvent(this, newStep);
-            Events.Add(newStepAddedEvent);
+            Title = title;
+            Description = description;
         }
 
-        public void UpdateTitle(string newTitle)
+        public Recipe(string title, string description, 
+                HashSet<Step> steps = null,
+                HashSet<RecipeIngredient> ingredients = null) : this()
         {
-            Title = Guard.Against.NullOrEmpty(newTitle, nameof(newTitle));
+            Title = title;
+            Description = description;
+            Steps = steps ?? new HashSet<Step>();
+            RecipeIngredients = ingredients ?? new HashSet<RecipeIngredient>();
         }
 
-        public void UpdateDescription(string newDescription)
+        public void AddStep(Step step)
         {
-            Description = Guard.Against.NullOrEmpty(newDescription, nameof(newDescription));
+
         }
     }
 }

@@ -1,3 +1,4 @@
+using Cookbook.SharedKernel.Interfaces;
 using Autofac.Extensions.DependencyInjection;
 using Cookbook.Core;
 using Cookbook.Infrastructure;
@@ -11,6 +12,7 @@ using Autofac;
 using Microsoft.AspNetCore.Mvc;
 using Cookbook.Core.Services;
 using Cookbook.Core.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +27,7 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");  //Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext(connectionString);
+
 
 //builder.Services.AddScoped(typeof(EfRepository<>));
 
@@ -49,7 +52,9 @@ builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
 
 
 builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
+builder.Logging.AddConsole()
+    .AddFilter(DbLoggerCategory.Database.Command.Name, LogLevel.Information);
+builder.Logging.AddDebug();
 
 var app = builder.Build();
 
@@ -67,25 +72,25 @@ app.UseHttpsRedirection();
 
 app.MapControllers();
 
-app.MapGet("/api/recipes",([FromServices] IRecipeService svc) =>
-    {
-    return svc.GetAll();
-});
+//app.MapGet("/api/recipes",([FromServices] IRecipeService svc) =>
+//    {
+//    return svc.GetAll();
+//});
 
-app.MapGet("/api/recipes/{id:int}", async ([FromServices] IRecipeService svc, int id) =>
-{
-    var result = await svc.GetById(id);
-    if (result is null)
-    {
-        return Results.NotFound();
-    }
-    return Results.Ok(result);
-});
+//app.MapGet("/api/recipes/{id:int}", async ([FromServices] IRecipeService svc, int id) =>
+//{
+//    var result = await svc.GetById(id);
+//    if (result is null)
+//    {
+//        return Results.NotFound();
+//    }
+//    return Results.Ok(result);
+//});
 
-app.MapGet("/api/recipes/search/{title}", async ([FromServices]IRecipeService svc, string title) =>
-{
-    var result = await svc.GetByTitle(title);
-    return Results.Ok(result);
-});
+//app.MapGet("/api/recipes/search/{title}", async ([FromServices]IRecipeService svc, string title) =>
+//{
+//    var result = await svc.GetByTitle(title);
+//    return Results.Ok(result);
+//});
 
 app.Run();

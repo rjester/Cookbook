@@ -1,25 +1,16 @@
-﻿using Ardalis.GuardClauses;
-using Cookbook.SharedKernel;
+﻿using Cookbook.SharedKernel;
+using Cookbook.SharedKernel.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Cookbook.Core.RecipeAggregate
 {
-    public class Step : BaseEntity
+    public partial class Step : BaseEntity, IAggregateRoot
     {
-        public string Description { get; private set; }
+        public int Id { get; set; }
+        public string Description { get; set; } = null!;
+        public int? RecipeId { get; set; }
 
-        public Step(string description)
-        {
-            Description = Guard.Against.NullOrEmpty(description, nameof(description));
-        }
-
-        public void UpdateDescription(string newDescription)
-        {
-            Description = Guard.Against.NullOrEmpty(newDescription, nameof(newDescription));
-        }
+        public virtual Recipe? Recipe { get; set; }
     }
 }
