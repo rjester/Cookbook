@@ -95,26 +95,16 @@ namespace Cookbook.Api.Api
 
             var existingIngredients = request.Ingredients.Where(y => y.Id > 0);
             var newIngredients = request.Ingredients.Where(y => y.Id <= 0);
+            var newRecipe = new Recipe(request.Title, request.Description);
 
-            //foreach (var item in ids)
-            //{
-            //    var xx = _ingredientRepo.GetByIdAsync<int>(item);
-            //}
-
-            //var ingredients = request.Ingredients.Select(x => new RecipeIngredient
-            //{
-            //        Quantity = x.Quantity,
-            //        Unit = x.Unit,
-            //        Ingredient = _ingredientRepo.GetByIdAsync<int>(x.Id).GetAwaiter().GetResult(),
-            //});
-
-            var newRecipe = new Recipe(request.Title, request.Description,
-                                        new HashSet<Step>(steps));
-            //new HashSet<RecipeIngredient>(ingredients));
+            foreach (var step in steps)
+            {
+                newRecipe.AddStep(step);
+            }
 
             foreach (var item in newIngredients)
             {
-                newRecipe.RecipeIngredients.Add(
+                newRecipe.AddIngredient(
                     new RecipeIngredient
                     {
                         Quantity = item.Quantity,
@@ -128,7 +118,7 @@ namespace Cookbook.Api.Api
 
             foreach (var item in existingIngredients)
             {
-                newRecipe.RecipeIngredients.Add(
+                newRecipe.AddIngredient(
                     new RecipeIngredient
                     {
                         Quantity = item.Quantity,

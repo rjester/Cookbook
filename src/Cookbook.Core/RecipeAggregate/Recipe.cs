@@ -1,4 +1,5 @@
-﻿using Cookbook.SharedKernel;
+﻿using Cookbook.Core.Events;
+using Cookbook.SharedKernel;
 using Cookbook.SharedKernel.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -7,17 +8,19 @@ namespace Cookbook.Core.RecipeAggregate
 {
     public partial class Recipe : BaseEntity, IAggregateRoot
     {
+        private List<Step> _steps = new List<Step>();
+        private List<RecipeIngredient> _recipeIngredients = new List<RecipeIngredient>();
         public int Id { get; set; }
         public string Title { get; set; } = null!;
         public string Description { get; set; } = null!;
 
-        public virtual ICollection<RecipeIngredient> RecipeIngredients { get; set; }
-        public virtual ICollection<Step> Steps { get; set; }
+        //public virtual ICollection<RecipeIngredient> RecipeIngredients { get; set; }
+        //public virtual ICollection<Step> Steps { get; set; }
+        public IEnumerable<Step> Steps => _steps.AsReadOnly();
+        public IEnumerable<RecipeIngredient> RecipeIngredients => _recipeIngredients.AsReadOnly();
 
         public Recipe()
         {
-            //RecipeIngredients = new HashSet<RecipeIngredient>();
-            //Steps = new HashSet<Step>();
         }
 
         public Recipe(string title, string description) : this()
@@ -26,19 +29,20 @@ namespace Cookbook.Core.RecipeAggregate
             Description = description;
         }
 
-        public Recipe(string title, string description, 
-                HashSet<Step> steps = null,
-                HashSet<RecipeIngredient> ingredients = null) : this()
+        public void AddStep(Step newStep)
         {
-            Title = title;
-            Description = description;
-            Steps = steps ?? new HashSet<Step>();
-            RecipeIngredients = ingredients ?? new HashSet<RecipeIngredient>();
+            _steps.Add(newStep);
+
+            var newStepAddedEvent = new NewStepAddedEvent(this, newStep);
+            Events.Add(newStepAddedEvent);
         }
 
-        public void AddStep(Step step)
+        public void AddIngredient(RecipeIngredient newIngredient)
         {
+            _recipeIngredients.Add(newIngredient);
 
+            var newIngredientAddedEvent = new NewIngredientAddedEvent(this, newIngredient);
+            Events.Add(newIngredientAddedEvent);
         }
     }
 }
