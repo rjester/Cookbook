@@ -1,4 +1,6 @@
 using Cookbook.Data.Entities;
+using Cookbook.Services;
+using Cookbook.Services.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,29 +15,51 @@ namespace Cookbook.UI.Controllers
     public class RecipeController : ControllerBase
     {
         private readonly ILogger<RecipeController> _logger;
-        private readonly CookbookContext _context;
+        private readonly IRecipeService _svc;
 
-        public RecipeController(ILogger<RecipeController> logger, 
-                                CookbookContext context)
+        public RecipeController(ILogger<RecipeController> logger,
+                                IRecipeService svc)
         {
             _logger = logger;
-            _context = context;
+            _svc = svc;
         }
 
         [HttpGet(Name = "GetAllRecipes")]
-        public IEnumerable<Recipe> GetAll()
+        public IActionResult GetAll()
         {
-            return _context.Recipes
-                .Include(x => x.Ingredients)
-                .ThenInclude(x => x.Ingredient)
-                            .Include(x => x.Steps)
-                            .ToList();
+            return Ok(_svc.GetAll());
         }
 
         [HttpGet("{id}", Name = "GetRecipe")]
-        public Recipe GetById(int id)
+        public IActionResult GetById(int id)
         {
-            return new Recipe();
+            var result = _svc.GetById(id);
+            if (result is null)
+            {
+                return NotFound();
+            }
+            return Ok(result);
+        }
+
+        [HttpPost(Name = "AddRecipe")]
+        public IActionResult Add(RecipeDto recipe)
+        {
+            var result = _svc.Add(recipe);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+
+        [Route("update")]
+        [HttpPost()]
+        public IActionResult Update(int id, RecipeDto recipe)
+        {
+            if (id != recipe.Id)
+            {
+                return NotFound();
+            }
+            var result = _svc.Update(id, recipe);
+
+            //var result = _svc.Add(recipe);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
     }
 }

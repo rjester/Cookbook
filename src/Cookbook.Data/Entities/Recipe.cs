@@ -10,7 +10,13 @@ namespace Cookbook.Data.Entities
         [Required]
         [MaxLength(500)]
         public string Description { get; set; }
-        public IEnumerable<Step> Steps { get; set; }
-        public IEnumerable<RecipeIngredient> Ingredients { get; set; }
+        public IList<Step> Steps { get; set; }
+        public IList<RecipeIngredient> Ingredients { get; set; }
+
+        public Recipe()
+        {
+            Steps = new List<Step>();
+            Ingredients = new List<RecipeIngredient>();
+        }
     }
 }

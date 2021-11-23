@@ -1,4 +1,5 @@
 using Cookbook.Data.Entities;
+using Cookbook.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<CookbookContext>();
-
+builder.Services.AddScoped<IRecipeService, RecipeService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
