@@ -76,7 +76,7 @@ namespace Cookbook.Api.Api
                 (
                     id: recipe.Id,
                     title: recipe.Title,
-                    description: String.Empty
+                    description: recipe.Description
                 ))
                 .ToList();
 
