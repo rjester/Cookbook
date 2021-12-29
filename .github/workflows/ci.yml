@@ -2,7 +2,7 @@ name: .NET
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, Feature/blazor ]
   pull_request:
     branches: [ main ]
 
@@ -18,8 +18,8 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore "src"
     - name: Build
-      run: dotnet build -c Release --no-restore
+      run: dotnet build -c Release --no-restore "src"
     - name: Test
-      run: dotnet test -c Release --no-build --verbosity normal
+      run: dotnet test -c Release --no-build --verbosity normal "src"
