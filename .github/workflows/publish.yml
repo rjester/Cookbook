@@ -1,8 +1,6 @@
 name: Build, Test, Publish
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -29,3 +27,9 @@ jobs:
     - name: Publish
       working-directory: src
       run: dotnet publish -o Deployable -c Release --self-contained false -r win-x64
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2.3.1
+      with:
+        name: Deployable
+        path: Deployable/**
+        if-no-files-found: error
