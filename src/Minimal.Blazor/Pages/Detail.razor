@@ -1,0 +1,90 @@
+﻿@page "/detail/{Slug}"
+@using System.Text.Json;
+@using System.Text.Json.Serialization;
+@using Minimal.Blazor.Models;
+@using Minimal.Blazor.Data;
+@inject IHttpClientFactory ClientFactory
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+
+@if (getRecipeError)
+{
+    <p>Unable to get recipe. Please try again later.</p>
+}
+else
+{
+    <div class="container">
+        <div class="row">
+            <h3>@recipe.Title</h3>
+            <div>@recipe.Description</div>
+        </div>
+        <div class="row">
+            <div class="col-md-7">
+                <img width="640" src="images/lidye-1Shk_PkNkNw-unsplash.jpg" alt="img-colored-shadow" class="img-fluid border-radius-lg">
+            </div>
+            <div class="col-md-5">
+                <div class="card border-2 border-secondary">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6"><strong>Prep time:</strong></div>
+                            <div class="col-6">@recipe.PrepTime</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>Cook time:</strong></div>
+                            <div class="col-6">@recipe.CookTime</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>Total time:</strong></div>
+                            <div class="col-6">@recipe.ReadyIn</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Ingredients</h3>
+                <ul>
+                    @foreach (var ing in recipe.Ingredients)
+                    {
+                        <li>@ing.Description</li>
+                    }
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Steps</h3>
+                <ul>
+                    @foreach (var step in recipe.Steps)
+                    {
+                        <li>@step.Description</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+
+}
+
+@code {
+    [Parameter]
+    public string Slug { get; set; }
+
+    private RecipeModel recipe = new();
+
+    private bool getRecipeError;
+    private bool shouldRender;
+
+    protected override bool ShouldRender() => shouldRender;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var svc = new RecipeService(ClientFactory.CreateClient(), NavigationManager);
+
+        recipe = await svc.GetDetail(Slug);
+
+        shouldRender = true;
+    }
+}

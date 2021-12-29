@@ -1,0 +1,69 @@
+﻿@page "/search"
+
+<PageTitle>Search</PageTitle>
+
+@using System.Text.Json;
+@using System.Text.Json.Serialization;
+@using Minimal.Blazor.Data
+@using Minimal.Blazor.Models;
+@using Microsoft.AspNetCore.WebUtilities
+@inject IHttpClientFactory ClientFactory
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+
+@if (getRecipeError)
+{
+    <p>Unable to get recent recipes. Please try again later.</p>
+}
+else
+{
+    <div class="container-fluid mt-6">
+        <div class="row">
+    @foreach (var recipe in recipes)
+    {
+        <div class="col-12 col-md-3 mt-5">
+            <div class="card min-height-400">
+              <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                <a class="d-block blur-shadow-image">
+                  <img src="images/lidye-1Shk_PkNkNw-unsplash.jpg" alt="img-colored-shadow" class="img-fluid border-radius-lg">
+                </a>
+              </div>
+              <div class="card-body text-center">
+                <h5 class="font-weight-normal">
+                  <a href="/detail/@recipe.Slug">@recipe.Title</a>
+                </h5>
+                <p class="mb-0">
+                  @recipe.Description
+                </p>
+              </div>
+            </div>
+          </div>
+    }
+    </div>
+    </div>
+}
+
+@code {
+    public string q { get; set; }
+    private List<RecipeModel> recipes = new();
+
+    private bool getRecipeError;
+    private bool shouldRender;
+
+    protected override bool ShouldRender() => shouldRender;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("q", out var _q))
+        {
+            q = _q;
+        }
+
+        var svc = new RecipeService(ClientFactory.CreateClient(), NavigationManager);
+
+        recipes = await svc.Search(q);
+
+        shouldRender = true;
+    }
+}
