@@ -13,9 +13,18 @@ using Microsoft.AspNetCore.Mvc;
 using Cookbook.Core.Services;
 using Cookbook.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
-
+    
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "MyPolicy",
+        builder =>
+        {
+            builder.WithOrigins("https://cookbook.russjester.com", 
+                                "http://localhost:3000")
+                    .WithMethods("PUT", "DELETE", "GET");
+        });
+});
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
@@ -24,9 +33,15 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     options.MinimumSameSitePolicy = SameSiteMode.None;
 });
 
+builder.Configuration.AddEnvironmentVariables(prefix: "ConnectionStrings__");
+
+//string connectionString = Environment.GetEnvironmentVariable("CookbookConnection");  //Configuration.GetConnectionString("DefaultConnection");
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");  //Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContext(connectionString);
+//builder.Services.AddDbContext(connectionString);
+builder.Services.AddDbContext<AppDbContext>(options => {
+    options.UseSqlServer(connectionString);
+});
 
 
 //builder.Services.AddScoped(typeof(EfRepository<>));
@@ -67,6 +82,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("MyPolicy");
 //app.UseAuthentication();
 //app.UseAuthorization();
 

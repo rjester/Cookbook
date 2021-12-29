@@ -5,15 +5,14 @@ import RecipeCardItem from '../components/recipe/RecipeCardItem';
 
 const Home = () => {
   const [query, setQuery] = useState("");
+  const [showResults, setShowResults] = useState(false);
   const [{ data, isLoading, isError }, doFetch] = useCookbookApi(
     `api/recipes/search/${query}`,
     { recipes: [] }
   );
-
-  console.log('data');
-  console.log(data);
-
-  const currentRecipes =  data && data.slice(0, 5);
+  
+  const currentRecipes = data ?? [];
+  //const currentRecipes =  data.length() > 0 && data.slice(0, 5);
 
   console.log('currentRecipes');
   console.log(currentRecipes);
@@ -28,10 +27,14 @@ const Home = () => {
   };
 
   const handleSubmit = (event) => {
-    doFetch(`api/recipes/search/${query}`);
+    console.log('begin submit');
+    //doFetch(`api/recipes/search/${query}`);
     event.preventDefault();
+    setShowResults(true);
+    console.log(showResults);
+    console.log('end submit');
   };
-
+console.log('[' + query + ']');
   return (
     <Fragment>
       <SearchBox
@@ -39,16 +42,21 @@ const Home = () => {
         handleChange={handleChange}
         handleSubmit={handleSubmit}
       />
-
+<p>{showResults}</p>
+ {showResults ? (
+  
       <div
         id="recipes"
-        className="recipes transition-all duration-1000 ease-out"
+        className="meals transition-all duration-1000 ease-out"
       >
           {currentRecipes &&
                 currentRecipes.map((meal) => (
                   <RecipeCardItem meal={meal} />
                 ))}  
       </div>
+ ) : (
+    <p></p>   
+  )}
     </Fragment>
   );
 };

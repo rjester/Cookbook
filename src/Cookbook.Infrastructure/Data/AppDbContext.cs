@@ -10,9 +10,9 @@ namespace Cookbook.Infrastructure.Data
     {
         private readonly IMediator _mediator;
 
-        public AppDbContext()
-        {
-        }
+        //public AppDbContext()
+        //{
+        //}
 
         public AppDbContext(DbContextOptions<AppDbContext> options, IMediator mediator)
             : base(options)
@@ -26,16 +26,19 @@ namespace Cookbook.Infrastructure.Data
         public virtual DbSet<Ingredient> Ingredients => Set<Ingredient>();
 
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer("Server=.;Database=Cookbook1;Trusted_Connection=True;MultipleActiveResultSets=true")
-                            .EnableSensitiveDataLogging();
-            }
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    if (!optionsBuilder.IsConfigured)
+        //    {
 
-            optionsBuilder.EnableSensitiveDataLogging();
-        }
+        //        optionsBuilder.UseSqlServer()
+        //                        .EnableSensitiveDataLogging();
+        //        //        optionsBuilder.UseSqlServer(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString)
+        //        //                    .EnableSensitiveDataLogging();
+        //    }
+
+        //    optionsBuilder.EnableSensitiveDataLogging();
+        //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

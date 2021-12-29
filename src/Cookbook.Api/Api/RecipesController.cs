@@ -66,10 +66,27 @@ namespace Cookbook.Api.Api
             return Ok(result);
         }
 
-        [HttpGet("search/{title}")]
-        public async Task<IActionResult> GetByTitle(string title)
+        [HttpGet("search")]
+        public async Task<IActionResult> GetByTitle(string q)
         {
-            var recipeSpec = new RecipeByTitleSpec(title);
+            var recipeSpec = new RecipeByTitleSpec(q);
+
+            var recipeDTOs = (await _repo.ListAsync(recipeSpec))
+                .Select(recipe => new RecipeDTO
+                (
+                    id: recipe.Id,
+                    title: recipe.Title,
+                    description: recipe.Description
+                ))
+                .ToList();
+
+            return Ok(recipeDTOs);
+        }
+
+        [HttpGet("recent")]
+        public async Task<IActionResult> GetRecent()
+        {
+            var recipeSpec = new RecipeByRecentSpec();
 
             var recipeDTOs = (await _repo.ListAsync(recipeSpec))
                 .Select(recipe => new RecipeDTO
