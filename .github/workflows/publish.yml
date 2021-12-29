@@ -35,4 +35,11 @@ jobs:
         password: ${{ secrets.ftp_password }}
         local-dir: src/Deployable/
         server-dir: russjester/cookbook/
-        dry-run: true
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/logs/**
+          **/.well-known/**
+          appsettings.Development.json
+        dry-run: false
