@@ -1,0 +1,130 @@
+﻿@page "/add"
+
+@using Minimal.Blazor.Data
+@using Minimal.Blazor.Models;
+
+@inject IHttpClientFactory ClientFactory
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+
+@if (LastSubmitResult != null)
+{
+    <h2>
+        Last submit status: @LastSubmitResult
+    </h2>
+}
+
+
+<EditForm Model=@recipe
+          OnSubmit=@FormSubmitted>
+
+    <DataAnnotationsValidator />
+     <ValidationSummary/>
+    @*<form action="recipes" method="post">*@
+
+    <div class="input-group input-group-static mb-4">
+        <label for="Title">Title</label>
+@*        <input type="text" class="form-control" placeholder="title">*@
+        <InputText class="form-control" id="Title" @bind-Value=recipe.Title />
+        <ValidationMessage For="() => recipe.Title"/>
+    </div>
+
+    <div class="input-group input-group-static mb-4">
+        
+    <label for="Description">Description</label>
+    <InputText class="form-control" id="Description" @bind-Value=recipe.Description />
+        <ValidationMessage For="() => recipe.Description"/>
+    @*<input type="text" class="form-control" placeholder="description">*@
+    </div>
+
+    <div class="input-group input-group-static mb-4">
+        <label for="PrepTime">Prep Time</label>
+        <InputText class="form-control" id="PrepTime" @bind-Value=recipe.PrepTime />
+        <ValidationMessage For="() => recipe.PrepTime"/>
+        @*<input type="text" class="form-control" placeholder="prep time">*@
+    </div>
+
+    <div class="input-group input-group-static mb-4">
+        <label for="CookTime">Cook Time</label>
+        <InputText class="form-control" id="CookTime" @bind-Value=recipe.CookTime />
+        <ValidationMessage For="() => recipe.CookTime"/>
+        @*<input type="text" class="form-control" placeholder="cook time">*@
+    </div>
+
+    <div class="input-group input-group-static mb-4">
+        <label for="ReadyIn">Total Time</label>
+        <InputText class="form-control" id="ReadyIn" @bind-Value=recipe.ReadyIn />
+        <ValidationMessage For="() => recipe.ReadyIn"/>
+@*        <input type="text" class="form-control" placeholder="total time">*@
+    </div>
+    <div class="input-group input-group-static mb-4">
+        <label for="Ingredients">Ingredients</label>
+        <InputTextArea class="form-control" id="Ingredients" @bind-Value=recipe.Ingredients />
+        <ValidationMessage For="() => recipe.Ingredients"/>
+@*        <label>Ingredients</label>
+        <textarea class="form-control" rows="4" placeholder="one per line"></textarea>*@
+    </div>
+
+    <div class="input-group input-group-static mb-4">
+        <label for="Steps">Steps</label>
+        <InputTextArea class="form-control" id="Steps" @bind-Value=recipe.Steps />
+        <ValidationMessage For="() => recipe.Steps"/>
+        @*<label>Steps</label>
+        <textarea class="form-control" rows="4" placeholder="one per line"></textarea>*@
+    </div>
+
+    <button type="submit" class="btn bg-gradient-info mb-0">Save</button>
+    @*</form>*@
+</EditForm>
+
+@code {
+    AddRecipeModel recipe = new();
+
+    string? LastSubmitResult;
+
+    async void FormSubmitted(EditContext editContext)
+    {
+        bool formIsValid = editContext.Validate();
+        LastSubmitResult =
+          formIsValid
+          ? "Success - form was valid"
+          : "Failure - form was invalid";
+
+        var svc = new RecipeService(ClientFactory.CreateClient(), NavigationManager);
+
+        var typedModel = editContext.Model as AddRecipeModel;
+
+        var convertedRecipe = new RecipeModel
+            {
+                CookTime = typedModel.CookTime,
+                Description = typedModel.Description,
+                PhotoUrl = null,
+                PrepTime = typedModel.PrepTime,
+                ReadyIn = typedModel.ReadyIn,
+                Title = typedModel.Title
+            };
+
+        var ingg = typedModel.Ingredients
+                                        .Split("\n")
+                                        .Select(x => new IngredientModel 
+                                                        { 
+                                                            Description = x 
+                                                        })
+                                         .ToList();
+
+        var stps = typedModel.Steps
+                                        .Split("\n")
+                                        .Select(x => new StepModel 
+                                                        { 
+                                                            Description = x 
+                                                        })
+                                         .ToList();
+
+        convertedRecipe.Ingredients = ingg;
+        convertedRecipe.Steps = stps;
+
+        var savedRecipe = await svc.AddRecipe(convertedRecipe);
+
+        NavigationManager.NavigateTo("/detail/" + savedRecipe.Slug);
+    }
+}

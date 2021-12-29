@@ -1,0 +1,75 @@
+﻿@inherits LayoutComponentBase
+
+<PageTitle>Minimal.Blazor</PageTitle>
+
+<div class="page">
+    @*    <div class="sidebar">
+        <NavMenu />
+        </div>*@
+
+    <main>
+        @*        <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-dark z-index-3 py-3">
+            <div class="container">
+            <a class="navbar-brand text-white" href="/" rel="tooltip" title="r" data-placement="bottom">
+            Material Kit
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navigation" aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navigation">
+            <ul class="navbar-nav navbar-nav-hover mx-auto">
+            <li class="nav-item px-3">
+            <NavLink class="nav-link" href="add">
+            <span class="fas fa-plus" aria-hidden="true"></span> Add
+            </NavLink>
+            </li>
+            </ul>
+            </div>
+            </div>
+            </nav>*@
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#"><i class="fas fa-utensils fa-2x"></i></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="#">Home</a>
+                        </li>
+@*                        <li class="nav-item">
+                            <NavLink class="nav-link" href="add">
+                                <span class="fas fa-plus" aria-hidden="true"></span> Add
+                            </NavLink>
+                        </li>*@
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div class="py-4">
+            <form action="search" method="GET">
+                <div class="row input-group input-group-outline">
+                    <div class="col-8 col-md-5 offset-1 offset-md-3">
+                        <input type="text" id="q" name="q" class="form-control" aria-label="Username">
+                    </div>
+                    <div class="col-1 col-md-1">
+                        <button class="btn btn-dark"
+                                type="submit"
+                                id="button-addon2">
+                            Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <article class="content px-1 px-md-4">
+            @Body
+        </article>
+
+<div class="adminActions">
+	<a class="adminButton bg-warning text-white" href="/add"><i class="fas fa-plus fa-2x"></i></a>
+</div>
+    </main>
+</div>
