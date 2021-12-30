@@ -7,14 +7,6 @@
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
 
-@if (LastSubmitResult != null)
-{
-    <h2>
-        Last submit status: @LastSubmitResult
-    </h2>
-}
-
-
 <EditForm Model=@recipe
           OnSubmit=@FormSubmitted>
 
@@ -80,15 +72,9 @@
 @code {
     AddRecipeModel recipe = new();
 
-    string? LastSubmitResult;
-
     async void FormSubmitted(EditContext editContext)
     {
         bool formIsValid = editContext.Validate();
-        LastSubmitResult =
-          formIsValid
-          ? "Success - form was valid"
-          : "Failure - form was invalid";
 
         var svc = new RecipeService(ClientFactory.CreateClient(), NavigationManager);
 
