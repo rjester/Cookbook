@@ -1,0 +1,136 @@
+﻿@page "/edit/{slug}"
+
+@using Minimal.Blazor.Data
+@using Minimal.Blazor.Models;
+@using Serilog;
+
+@inject IHttpClientFactory ClientFactory
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+@inject RecipeService1 svcc
+
+<EditForm Model=@recipe
+          OnSubmit=@FormSubmitted>
+
+    <DataAnnotationsValidator />
+     <ValidationSummary/>
+
+    <div class="input-group input-group-static mb-4">
+        <label for="Title">Title</label>
+        <InputText class="form-control" id="Title" @bind-Value=recipe.Title />
+        <ValidationMessage For="() => recipe.Title"/>
+    </div>
+
+    <div class="input-group input-group-static mb-4">
+        
+    <label for="Description">Description</label>
+    <InputText class="form-control" id="Description" @bind-Value=recipe.Description />
+        <ValidationMessage For="() => recipe.Description"/>
+    </div>
+
+    <div class="input-group input-group-static mb-4">
+        <label for="PrepTime">Prep Time</label>
+        <InputText class="form-control" id="PrepTime" @bind-Value=recipe.PrepTime />
+        <ValidationMessage For="() => recipe.PrepTime"/>
+    </div>
+
+    <div class="input-group input-group-static mb-4">
+        <label for="CookTime">Cook Time</label>
+        <InputText class="form-control" id="CookTime" @bind-Value=recipe.CookTime />
+        <ValidationMessage For="() => recipe.CookTime"/>
+    </div>
+
+    <div class="input-group input-group-static mb-4">
+        <label for="ReadyIn">Total Time</label>
+        <InputText class="form-control" id="ReadyIn" @bind-Value=recipe.ReadyIn />
+        <ValidationMessage For="() => recipe.ReadyIn"/>
+    </div>
+    <div class="input-group input-group-static mb-4">
+        <label for="Ingredients">Ingredients</label>
+    @foreach(var ingredient in recipe.Ingredients)
+    {
+        <InputText class="form-control" @bind-Value=ingredient.Description />
+    }
+    </div>
+        <div class="input-group input-group-static mb-4">
+        <label for="Ingredients">Steps</label>
+    @foreach(var step in recipe.Steps)
+    {
+        <InputText class="form-control" @bind-Value=step.Description />
+    }
+    </div>
+    @*    <div class="input-group input-group-static mb-4">
+        <label for="Ingredients">Ingredients</label>
+
+        <InputTextArea class="form-control" id="Ingredients" @bind-Value=recipe.Ingredients />
+        <ValidationMessage For="() => recipe.Ingredients"/>
+    </div>*@
+
+@*    <div class="input-group input-group-static mb-4">
+        <label for="Steps">Steps</label>
+        <InputTextArea class="form-control" id="Steps" @bind-Value=recipe.Steps />
+        <ValidationMessage For="() => recipe.Steps"/>
+    </div>*@
+
+    <button type="submit" class="btn bg-gradient-info mb-0">Save</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public string Slug { get; set; }
+
+    RecipeModel recipe = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Log.Debug("Loading edit form");
+        //var svc = new RecipeService(ClientFactory.CreateClient(), NavigationManager);
+
+        recipe = await svcc.GetDetail(Slug);
+        Log.Debug("recipe to edit {@recipe}", recipe);
+        Serilog.Log.Debug("edit recipe model: {@recipe}", recipe);
+    }
+
+    async void FormSubmitted(EditContext editContext)
+    {
+        bool formIsValid = editContext.Validate();
+
+        var svc = new RecipeService(ClientFactory.CreateClient(), NavigationManager);
+
+        var typedModel = editContext.Model as EditRecipeModel;
+
+        var convertedRecipe = new EditRecipeModel
+            {
+                CookTime = typedModel.CookTime,
+                Description = typedModel.Description,
+                PhotoUrl = null,
+                PrepTime = typedModel.PrepTime,
+                ReadyIn = typedModel.ReadyIn,
+                Title = typedModel.Title,
+                Id = typedModel.Id
+            };
+
+        //var ingg = typedModel.Ingredients
+        //                                .Select(x => new IngredientModel 
+        //                                                { 
+        //                                                    Id = x.Id,
+        //                                                    Description = x.Description
+        //                                                })
+        //                                 .ToList();
+
+        //var stps = typedModel.Steps
+        //                                .Select(x => new StepModel 
+        //                                                { 
+        //                                                    Id = x.Id,
+        //                                                    Description = x.Description
+        //                                                })
+        //                                 .ToList();
+
+        //convertedRecipe.Ingredients = ingg;
+        //convertedRecipe.Steps = stps;
+
+        var savedRecipe = await svc.UpdateRecipe(convertedRecipe);
+
+        NavigationManager.NavigateTo("/detail/" + savedRecipe.Slug);
+    }
+}

@@ -6,6 +6,7 @@
 @inject IHttpClientFactory ClientFactory
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
+@inject RecipeService1 svcc
 
 <PageTitle>Index</PageTitle>
 
@@ -49,7 +50,7 @@ else
 }
 
 @code {
-    private List<RecipeModel> recipes = new();
+    private List<RecentRecipeModel> recipes = new();
 
     private bool getRecipeError;
     private bool shouldRender;
@@ -58,24 +59,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var svc = new RecipeService(ClientFactory.CreateClient(), NavigationManager);
+        //var svc = new RecipeService(ClientFactory.CreateClient(), NavigationManager);
 
-        recipes = await svc.GetRecent();
-        
-        //var client = ClientFactory.CreateClient();
-        //var requestUrl = NavigationManager.BaseUri + "recipes/recent";
-        //HttpResponseMessage response = await client.GetAsync(requestUrl);
+        //recipes = await svc.GetRecent();
 
-        //if (response.IsSuccessStatusCode)
-        //{
-        //    using var responseStream = await response.Content.ReadAsStreamAsync();
-        //    recipes = await JsonSerializer.DeserializeAsync
-        //        <List<RecipeModel>>(responseStream);
-        //}
-        //else
-        //{
-        //    getRecipeError = true;
-        //}
+        recipes = await svcc.GetRecent();
 
         shouldRender = true;
     }

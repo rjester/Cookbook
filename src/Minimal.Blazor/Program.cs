@@ -4,9 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Minimal.Blazor.Data;
 using Minimal.Infrastructure.Data;
 using Serilog;
+using Serilog.Formatting.Compact;
 
 Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
+                .Enrich.FromLogContext()
+                .WriteTo.Console(new RenderedCompactJsonFormatter())
                 .CreateBootstrapLogger();
 
 Log.Information("Starting up");
@@ -30,8 +32,10 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
     builder.Services.AddRazorPages();
+    builder.Services.AddControllersWithViews();
     builder.Services.AddServerSideBlazor();
     builder.Services.AddSingleton<WeatherForecastService>();
+    builder.Services.AddTransient<RecipeService1>();
     builder.Services.AddHttpClient();
 
 
@@ -53,16 +57,14 @@ try
 
         try
         {
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogInformation(connectionString);
+            Log.Information(connectionString);
             var context = services.GetRequiredService<AppDbContext>();
             //                        context.Database.Migrate();
             context.Database.EnsureCreated();
         }
         catch (Exception ex)
         {
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred seeding the DB.");
+            Log.Error(ex, "An error occurred seeding the DB.");
         }
     }
 
@@ -71,6 +73,8 @@ try
     app.UseStaticFiles();
 
     app.UseRouting();
+
+    
 
     if (app.Environment.IsDevelopment())
     {
@@ -81,12 +85,12 @@ try
     app.MapGet("/recipes", async (AppDbContext context) =>
             await context.Recipes.ToListAsync())
         .WithName("GetAllRecipes");
-    app.MapGet("/recipes/recent", async (AppDbContext context) =>
-    {
-        var tt = await context.Recipes.OrderByDescending(x => x.Id).Take(10).ToListAsync();
-        return tt;
-    })
-        .WithName("GetRecentRecipes");
+    //app.MapGet("/recipes/recent", async (AppDbContext context) =>
+    //{
+    //    var tt = await context.Recipes.OrderByDescending(x => x.Id).Take(10).ToListAsync();
+    //    return tt;
+    //})
+    //    .WithName("GetRecentRecipes");
     app.MapGet("/recipes/search", async (AppDbContext context, string q) =>
             await context.Recipes.Where(x => x.Title.Contains(q)).ToListAsync())
         .WithName("GetRecipeSearch");
@@ -145,6 +149,8 @@ try
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
 
+
+    app.MapControllers();
     app.MapBlazorHub();
     app.MapFallbackToPage("/_Host");
 
