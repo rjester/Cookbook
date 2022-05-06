@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Cookbook.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Cookbook.Controllers;
 
@@ -13,11 +14,13 @@ public class HomeController : Controller
         _logger = logger;
     }
 
+    [AllowAnonymous]
     public IActionResult Index()
     {
         return View();
     }
 
+    [Authorize]
     public IActionResult Privacy()
     {
         return View();
