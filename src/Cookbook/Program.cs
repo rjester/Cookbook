@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using Cookbook.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using Cookbook.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +17,14 @@ builder.Services.AddAuthorization(options =>
     // By default, all incoming requests will be authorized according to the default policy.
     options.FallbackPolicy = options.DefaultPolicy;
 });
+builder.Configuration.AddEnvironmentVariables(prefix: "ConnectionStrings__");
+string connectionString = builder.Configuration.GetConnectionString("CookbookConnection");
+builder.Services.AddDbContext<AppDbContext>(options =>
+                //options.UseInMemoryDatabase("Cookbooks"));
+                options.UseSqlServer(connectionString));
+
+builder.Services.AddScoped<IRecipeService, RecipeService>();
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages()
     .AddMicrosoftIdentityUI();
